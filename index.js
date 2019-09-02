@@ -66,11 +66,12 @@ const data = fs.readFileSync (`${__dirname}/dev-data/data.json`, 'utf-8')
 const dataObj = JSON.parse(data);
 
 const server = http.createServer ((req, res) => {
-    const pathName = req.url;
-
-
+    
+    // ES6 destructuring (Using the same name of variables as the key from the returning object from url.parse)
+    const {query, pathname} = url.parse(req.url, true);
+    
     // Overview page
-    if (pathName === '/' || pathName === '/overview') {
+    if (pathname === '/' || pathname === '/overview') {
         res.writeHead (200, {'Content-type': 'text/html'})        
         
         // Use map to create an array with all the cards
@@ -82,20 +83,19 @@ const server = http.createServer ((req, res) => {
         res.end (output);
 
     // Product Page
-    } else if (pathName.substring(0, pathName.indexOf("?")) === '/product'){
-        res.writeHead (200, {'Content-type': 'text/html'})    
-
-        // Geting verything after the =
-        const id = pathName.substring(pathName.indexOf("=")+1)
-
-        // Replacing the tenplate with the info from the dataObj
-        const output = replaceTemplate (tempProduct, dataObj[id]);
+    } else if (pathname === '/product'){
+        res.writeHead (200, {'Content-type': 'text/html'});
         
+        // Getting the producto from the dataObj
+        const product =  dataObj[query.id];    
+            
+        // Replacing the tenplate with the info from the object
+        const output = replaceTemplate (tempProduct, product);
+                
         res.end (output);
-
-
+        
     // API        
-    } else if (pathName === '/api'){
+    } else if (pathname === '/api'){
         // We need to inform the brownser that we are returning json ... We use the code 200 that represent the status sucess
         res.writeHead (200, {'Content-type':'application/json'});
         // res.end need to send back an string, so we can pass the data
