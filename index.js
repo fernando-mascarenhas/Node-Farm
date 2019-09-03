@@ -1,6 +1,20 @@
+// Core Modules
 const fs = require('fs');
 const http = require('http');
 const url = require('url');
+
+// Third Party Modules
+
+const slugify = require('slugify');
+
+
+// Custom modules
+// As an exception, the ./ on require points do the folder the file is stored and not to where it is being executed as in fs.readFileSync
+const replaceTemplate = require('./modules/replaceTemplate');
+
+
+
+
 
 
 //////////////////////////////////////
@@ -39,22 +53,7 @@ const url = require('url');
 //////////////////////////////////////
 // SERVER
 
-const replaceTemplate = (template, product) => {
-    let output = template.replace(/{%PRODUCTNAME%}/g, product.productName);
-    output = output.replace(/{%IMAGE%}/g, product.image);
-    output = output.replace(/{%FROM%}/g, product.from);
-    output = output.replace(/{%NUTRIENTS%}/g, product.nutrients);
-    output = output.replace(/{%QUANTITY%}/g, product.quantity);
-    output = output.replace(/{%PRICE%}/g, product.price);
-    output = output.replace(/{%DESCRIPTION%}/g, product.description);
-    output = output.replace(/{%ID%}/g, product.id);
 
-    if (!product.organic){
-        output = output.replace(/{%NOT_ORGANIC%}/g, 'not-organic');
-    } 
-
-    return output;
-};
 
 
 // In these cases we use the Sync version because the function will only execute once when the code starts, blocking the execution for a few ms
@@ -65,10 +64,16 @@ const tempProduct = fs.readFileSync (`${__dirname}/templates/template-product.ht
 const data = fs.readFileSync (`${__dirname}/dev-data/data.json`, 'utf-8')
 const dataObj = JSON.parse(data);
 
+// This part of the code only exemplify the use of the slugify module
+// If we want to use this, we should swap the logic of the ID for the slugified products names.
+const slugs = dataObj.map (el => slugify(el.productName, { lower: true }));
+console.log(slugs);
+
 const server = http.createServer ((req, res) => {
     
     // ES6 destructuring (Using the same name of variables as the key from the returning object from url.parse)
     const {query, pathname} = url.parse(req.url, true);
+    console.log(query);
     
     // Overview page
     if (pathname === '/' || pathname === '/overview') {
